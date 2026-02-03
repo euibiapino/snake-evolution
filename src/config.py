@@ -1,0 +1,65 @@
+
+# CONFIGURAÇÕES DA TELA
+# Tamanho de cada célula do grid (em pixels)
+# A cobra e frutas ocupam 1 célula cada
+
+CELL_SIZE = 25
+
+GRID_COLS = 28  
+GRID_ROWS = 20 
+
+SCREEN_WIDTH = CELL_SIZE * GRID_COLS   
+SCREEN_HEIGHT = CELL_SIZE * GRID_ROWS 
+
+HEADER_HEIGHT = 60
+
+
+WINDOW_WIDTH = SCREEN_WIDTH
+WINDOW_HEIGHT = SCREEN_HEIGHT + HEADER_HEIGHT
+
+FPS = 60
+
+# CORES (RGB)
+
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+
+# Cores do fundo e grid
+BG_COLOR = (15, 15, 35)          
+GRID_COLOR = (25, 25, 50)       
+HEADER_COLOR = (10, 10, 25)      
+
+# Cores da cobra
+SNAKE_HEAD_COLOR = (0, 255, 128)
+SNAKE_BODY_COLOR = (0, 200, 100)
+SNAKE_BODY_ALT = (0, 180, 90)
+
+# Cores das frutas
+FRUIT_COLOR = (255, 60, 60)
+FRUIT_GOLDEN_COLOR = (255, 215, 0)
+FRUIT_SPEED_COLOR = (0, 150, 255)
+
+# Cores de texto
+TEXT_COLOR = (255, 255, 255)
+TEXT_SECONDARY = (150, 150, 170)
+SCORE_COLOR = (0, 255, 128)
+
+# CONFIGURAÇÕES DO JOGO
+
+SNAKE_SPEED = 8
+
+SPEED_INCREMENT = 0.5
+
+MAX_SPEED = 15
+
+# Pontos por fruta
+POINTS_NORMAL = 10
+POINTS_GOLDEN = 50
+POINTS_SPEED = 20
+
+# DIREÇÕES (vetores de movimento)
+
+DIR_UP = (0, -1)
+DIR_DOWN = (0, 1)
+DIR_LEFT = (-1, 0)
+DIR_RIGHT = (1, 0)
