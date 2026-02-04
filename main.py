@@ -4,8 +4,10 @@ import sys
 from src.config import (
     WINDOW_WIDTH, WINDOW_HEIGHT, FPS,
     BG_COLOR, HEADER_COLOR, HEADER_HEIGHT, GRID_COLOR,
-    CELL_SIZE, GRID_COLS, GRID_ROWS, SCREEN_WIDTH
+    CELL_SIZE, GRID_COLS, GRID_ROWS, SCREEN_WIDTH,
+    SNAKE_SPEED
 )
+from src.entities import Snake
 
 
 def draw_grid(screen):
@@ -64,6 +66,13 @@ def main():
     score = 0
     running = True
 
+    # Cria a cobra
+    snake = Snake()
+
+    # Timer para controlar velocidade da cobra
+    move_timer = 0
+    move_interval = 1000 // SNAKE_SPEED  # milissegundos entre movimentos
+
     # GAME LOOP
     while running:
 
@@ -75,9 +84,16 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     running = False
 
+        # Atualiza timer e move a cobra
+        move_timer += clock.get_time()
+        if move_timer >= move_interval:
+            move_timer = 0
+            snake.move()
+
         screen.fill(BG_COLOR)
         draw_grid(screen)
         draw_header(screen, score)
+        snake.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
