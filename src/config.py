@@ -1,65 +1,123 @@
 
-# CONFIGURAÇÕES DA TELA
-# Tamanho de cada célula do grid (em pixels)
-# A cobra e frutas ocupam 1 célula cada
+# TELA
 
-CELL_SIZE = 25
+CELL_SIZE = 32
+GRID_COLS = 24
+GRID_ROWS = 16
 
-GRID_COLS = 28  
-GRID_ROWS = 20 
+# Borda decorativa ao redor do grid (em células)
+BORDER_SIZE = 2
 
-SCREEN_WIDTH = CELL_SIZE * GRID_COLS   
-SCREEN_HEIGHT = CELL_SIZE * GRID_ROWS 
+# Área jogável em pixels
+SCREEN_WIDTH = CELL_SIZE * GRID_COLS
+SCREEN_HEIGHT = CELL_SIZE * GRID_ROWS
 
-HEADER_HEIGHT = 60
+# Header
+HEADER_HEIGHT = 56
 
+# Janela total = grid + borda + header
+BORDER_PX = BORDER_SIZE * CELL_SIZE
+WINDOW_WIDTH = SCREEN_WIDTH + BORDER_PX * 2
+WINDOW_HEIGHT = SCREEN_HEIGHT + BORDER_PX * 2 + HEADER_HEIGHT
 
-WINDOW_WIDTH = SCREEN_WIDTH
-WINDOW_HEIGHT = SCREEN_HEIGHT + HEADER_HEIGHT
+# Offset do grid (onde começa a área jogável)
+GRID_OFFSET_X = BORDER_PX
+GRID_OFFSET_Y = HEADER_HEIGHT + BORDER_PX
 
 FPS = 60
 
-# CORES (RGB)
+# CORES
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-# Cores do fundo e grid
-BG_COLOR = (15, 15, 35)          
-GRID_COLOR = (25, 25, 50)       
-HEADER_COLOR = (10, 10, 25)      
+GRID_LIGHT = (170, 215, 81)
+GRID_DARK  = (162, 209, 73)
+HEADER_COLOR = (74, 117, 44)
+HEADER_SHADOW = (55, 90, 30)
 
-# Cores da cobra
-SNAKE_HEAD_COLOR = (0, 255, 128)
-SNAKE_BODY_COLOR = (0, 200, 100)
-SNAKE_BODY_ALT = (0, 180, 90)
+# Borda / terreno
+BORDER_COLOR     = (140, 100, 50)
+BORDER_DARK      = (110, 75,  35)
+BORDER_GRASS     = (100, 170, 50)
+BORDER_GRASS_ALT = (85,  150, 40)
 
-# Cores das frutas
-FRUIT_COLOR = (255, 60, 60)
+SNAKE_HEAD_COLOR  = (100, 120, 220)
+SNAKE_BODY_COLOR  = (100, 120, 220)
+SNAKE_BODY_ALT    = (85,  100, 195)
+SNAKE_BOOST_HEAD  = (80,  180, 255)
+SNAKE_BOOST_BODY  = (60,  150, 240)
+SNAKE_BOOST_ALT   = (50,  130, 210)
+
+FRUIT_COLOR        = (255, 60,  60)
+FRUIT_GLOW         = (255, 120, 120)
 FRUIT_GOLDEN_COLOR = (255, 215, 0)
-FRUIT_SPEED_COLOR = (0, 150, 255)
+FRUIT_GOLDEN_GLOW  = (255, 235, 100)
+FRUIT_SPEED_COLOR  = (130, 40,  160)
+FRUIT_SPEED_GLOW   = (180, 100, 210)
 
-# Cores de texto
-TEXT_COLOR = (255, 255, 255)
-TEXT_SECONDARY = (150, 150, 170)
-SCORE_COLOR = (0, 255, 128)
+TEXT_COLOR      = (255, 255, 255)
+TEXT_SECONDARY  = (200, 230, 160)
+SCORE_COLOR     = (255, 255, 255)
 
-# CONFIGURAÇÕES DO JOGO
+TITLE_COLOR     = (255, 255, 255)
+TITLE_GLOW      = (200, 230, 160)
 
-SNAKE_SPEED = 8
+GAMEOVER_COLOR  = (220, 50, 50)
+GAMEOVER_GLOW   = (140, 20, 20)
 
-SPEED_INCREMENT = 0.5
+# JOGO
 
-MAX_SPEED = 15
+SNAKE_SPEED            = 6
+SPEED_INCREMENT        = 1
+MAX_SPEED              = 16
+SPEED_BOOST_AMOUNT     = 5
+SPEED_BOOST_DURATION   = 150
 
-# Pontos por fruta
 POINTS_NORMAL = 10
 POINTS_GOLDEN = 50
-POINTS_SPEED = 20
+POINTS_SPEED  = 20
 
-# DIREÇÕES (vetores de movimento)
+SPECIAL_FRUIT_INTERVAL = 80
+SPECIAL_FRUIT_CHANCE   = 0.7
+SPECIAL_FRUIT_LIFETIME = 300
 
-DIR_UP = (0, -1)
-DIR_DOWN = (0, 1)
-DIR_LEFT = (-1, 0)
-DIR_RIGHT = (1, 0)
+# PARTÍCULAS
+
+PARTICLE_COUNT    = 12
+PARTICLE_SPEED    = 3.0
+PARTICLE_LIFETIME = 25
+PARTICLE_SIZE     = 4
+
+# DIREÇÕES
+
+DIR_UP    = (0, -1)
+DIR_DOWN  = (0,  1)
+DIR_LEFT  = (-1, 0)
+DIR_RIGHT = (1,  0)
+
+# SPRITES
+
+SPRITE_CELL = 32
+SPRITE_PATH = "assets/sprites/snake.png"
+FRUIT_SPRITE_PATH = "assets/sprites/fruits.png"
+DECO_SPRITE_PATH = "assets/sprites/decorations.png"
+
+FONT_TITLE = "assets/fonts/PressStart2P.ttf"
+FONT_BODY  = "assets/fonts/Silkscreen.ttf"
+FONT_BOLD  = "assets/fonts/Silkscreen-Bold.ttf"
+
+SPR_HEAD_RIGHT  = 0
+SPR_HEAD_LEFT   = 1
+SPR_HEAD_UP     = 2
+SPR_HEAD_DOWN   = 3
+SPR_BODY_H      = 4
+SPR_BODY_V      = 5
+SPR_CORNER_BL   = 6
+SPR_CORNER_BR   = 7
+SPR_CORNER_TL   = 8
+SPR_CORNER_TR   = 9
+SPR_TAIL_RIGHT  = 10
+SPR_TAIL_LEFT   = 11
+SPR_TAIL_UP     = 12
+SPR_TAIL_DOWN   = 13

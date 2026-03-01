@@ -1,29 +1,27 @@
-import pygame
 from ..config import (
-    GRID_COLS, GRID_ROWS, CELL_SIZE, HEADER_HEIGHT,
-    SNAKE_HEAD_COLOR, SNAKE_BODY_COLOR, SNAKE_BODY_ALT,
-    DIR_RIGHT
+    GRID_COLS, GRID_ROWS, DIR_RIGHT
 )
+from ..sprite_renderer import SnakeSpriteRenderer
 
 
 class Snake:
     def __init__(self):
+        self._renderer = SnakeSpriteRenderer()
         self.reset()
 
     def reset(self):
-        
-        #Posição inicial: centro do grid
         center_x = GRID_COLS // 2
         center_y = GRID_ROWS // 2
 
         self.body = [
-            (center_x, center_y),      #Cabeça
-            (center_x - 1, center_y),  #Corpo
-            (center_x - 2, center_y),  #Cauda
+            (center_x, center_y),
+            (center_x - 1, center_y),
+            (center_x - 2, center_y),
         ]
-
         self.direction = DIR_RIGHT
         self.growing = 0
+        self.speed_boost = False
+        self.boost_timer = 0
 
     @property
     def head(self):
@@ -37,7 +35,6 @@ class Snake:
     def move(self):
         head_x, head_y = self.head
         new_head = (head_x + self.direction[0], head_y + self.direction[1])
-
         self.body.insert(0, new_head)
 
         if self.growing > 0:
@@ -45,53 +42,27 @@ class Snake:
         else:
             self.body.pop()
 
+        if self.speed_boost:
+            self.boost_timer -= 1
+            if self.boost_timer <= 0:
+                self.speed_boost = False
+
     def grow(self, amount=1):
         self.growing += amount
 
+    def activate_boost(self, duration):
+        self.speed_boost = True
+        self.boost_timer = duration
+
+    def hit_wall(self):
+        x, y = self.head
+        return x < 0 or x >= GRID_COLS or y < 0 or y >= GRID_ROWS
+
+    def hit_self(self):
+        return self.head in self.body[1:]
+
     def draw(self, screen):
-
-        for i, (x, y) in enumerate(self.body):
-            pixel_x = x * CELL_SIZE
-            pixel_y = y * CELL_SIZE + HEADER_HEIGHT
-
-            margin = 2
-            rect = pygame.Rect(
-                pixel_x + margin,
-                pixel_y + margin,
-                CELL_SIZE - margin * 2,
-                CELL_SIZE - margin * 2
-            )
-
-            if i == 0:
-                #CABEÇA
-                pygame.draw.rect(screen, SNAKE_HEAD_COLOR, rect, border_radius=8)
-
-                #Desenha os olhos
-                self._draw_eyes(screen, pixel_x, pixel_y)
-            else:
-                #CORPO
-                color = SNAKE_BODY_COLOR if i % 2 == 0 else SNAKE_BODY_ALT
-                pygame.draw.rect(screen, color, rect, border_radius=5)
-
-    def _draw_eyes(self, screen, pixel_x, pixel_y):
-        eye_radius = 3
-        dx, dy = self.direction
-
-        if dx == 1:     #Direita
-            eye1 = (pixel_x + CELL_SIZE - 8, pixel_y + 8)
-            eye2 = (pixel_x + CELL_SIZE - 8, pixel_y + CELL_SIZE - 8)
-        elif dx == -1:  #Esquerda
-            eye1 = (pixel_x + 8, pixel_y + 8)
-            eye2 = (pixel_x + 8, pixel_y + CELL_SIZE - 8)
-        elif dy == -1:  #Cima
-            eye1 = (pixel_x + 8, pixel_y + 8)
-            eye2 = (pixel_x + CELL_SIZE - 8, pixel_y + 8)
-        else:           #Baixo
-            eye1 = (pixel_x + 8, pixel_y + CELL_SIZE - 8)
-            eye2 = (pixel_x + CELL_SIZE - 8, pixel_y + CELL_SIZE - 8)
-
-        pygame.draw.circle(screen, (0, 0, 0), eye1, eye_radius)
-        pygame.draw.circle(screen, (0, 0, 0), eye2, eye_radius)
+        self._renderer.draw(screen, self.body, self.direction, self.speed_boost)
 
     def __len__(self):
         return len(self.body)
