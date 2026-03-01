@@ -20,6 +20,7 @@ from src.config import (
     TITLE_COLOR, TITLE_GLOW, GAMEOVER_COLOR, GAMEOVER_GLOW,
     FRUIT_COLOR, FRUIT_GOLDEN_COLOR, FRUIT_SPEED_COLOR,
     FONT_TITLE, FONT_BODY, FONT_BOLD,
+    user_data_path,
 )
 from src.entities import Snake, Fruit, FruitType
 from src.entities.fruit import _load_fruit_sprites
@@ -89,7 +90,7 @@ class Game:
         self.paused_game = False
 
         # ====== SETTINGS (carrega/salva) ======
-        self.settings_path = "settings.json"
+        self.settings_path = user_data_path("settings.json")
         self.settings = {
             "control_scheme": "both",  # "arrows" | "wasd" | "both"
             "sfx_enabled": True,
@@ -113,14 +114,16 @@ class Game:
                 with open(self.settings_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 if isinstance(data, dict):
+                    self.high_score = data.pop("high_score", 0)
                     self.settings.update(data)
         except Exception:
             pass
 
     def _save_settings(self):
         try:
+            data = {**self.settings, "high_score": self.high_score}
             with open(self.settings_path, "w", encoding="utf-8") as f:
-                json.dump(self.settings, f, ensure_ascii=False, indent=2)
+                json.dump(data, f, ensure_ascii=False, indent=2)
         except Exception:
             pass
 
@@ -430,6 +433,7 @@ class Game:
         self.state = STATE_GAME_OVER
         if self.score > self.high_score:
             self.high_score = self.score
+            self._save_settings()
 
         self.go_enter_t = 0.0
         self.go_score_display = 0
