@@ -91,11 +91,13 @@ class Game:
             "sfx_enabled": True,
             "music_enabled": True,
             "sfx_volume": 0.8,     # 0..1
-            "music_volume": 0.6,   # 0..1
-            "music_path": os.path.join("assets", "music", "theme.ogg"),
+            "music_volume": 0.8,   # 0..1
         }
         self._load_settings()
         self._apply_audio_settings()
+
+        # >>> SOM DO SEU AMIGO (menu music) <<<
+        self._music_menu()
 
     # ======================================================
     # SETTINGS
@@ -119,40 +121,50 @@ class Game:
             pass
 
     def _apply_audio_settings(self):
-        # música
-        try:
-            pygame.mixer.music.set_volume(float(self.settings.get("music_volume", 0.6)))
-        except Exception:
-            pass
-
-        # SFX volume: se seu SoundManager tiver método, usa. Se não tiver, só guarda.
+        # Volume SFX — se o SoundManager do seu amigo tiver setter, usamos.
         if hasattr(self.sounds, "set_sfx_volume"):
             try:
                 self.sounds.set_sfx_volume(float(self.settings.get("sfx_volume", 0.8)))
             except Exception:
                 pass
 
-        if self.settings.get("music_enabled", True):
-            self._ensure_music_playing()
-        else:
-            self._stop_music()
+        # Volume Música — se o SoundManager do seu amigo tiver setter, usamos.
+        if hasattr(self.sounds, "set_music_volume"):
+            try:
+                self.sounds.set_music_volume(float(self.settings.get("music_volume", 0.8)))
+            except Exception:
+                pass
 
-    def _ensure_music_playing(self):
-        path = self.settings.get("music_path", "")
-        if not path or not os.path.exists(path):
+    # ======================================================
+    # SOM (integração com o código do seu amigo)
+    # ======================================================
+
+    def _music_menu(self):
+        if not self.settings.get("music_enabled", True):
+            self._music_stop()
             return
-        try:
-            if not pygame.mixer.music.get_busy():
-                pygame.mixer.music.load(path)
-                pygame.mixer.music.play(-1)
-        except Exception:
-            pass
+        if hasattr(self.sounds, "play_menu_music"):
+            try:
+                self.sounds.play_menu_music()
+            except Exception:
+                pass
 
-    def _stop_music(self):
-        try:
-            pygame.mixer.music.stop()
-        except Exception:
-            pass
+    def _music_game(self):
+        if not self.settings.get("music_enabled", True):
+            self._music_stop()
+            return
+        if hasattr(self.sounds, "play_game_music"):
+            try:
+                self.sounds.play_game_music()
+            except Exception:
+                pass
+
+    def _music_stop(self):
+        if hasattr(self.sounds, "stop_music"):
+            try:
+                self.sounds.stop_music()
+            except Exception:
+                pass
 
     # ======================================================
     # HELPERS VISUAIS
@@ -193,10 +205,6 @@ class Game:
         self.screen.blit(sub, (x, y))
 
     def _render_fit(self, text, primary_font, fallback_font, color, max_width):
-        """
-        Renderiza texto centralizado e garante que cabe em max_width.
-        Tenta fonte maior; se não couber, tenta fonte menor; se ainda não couber, escala pixel.
-        """
         surf = primary_font.render(text, True, color).convert_alpha()
         if surf.get_width() <= max_width:
             return surf
@@ -205,7 +213,6 @@ class Game:
         if surf2.get_width() <= max_width:
             return surf2
 
-        # escala pixel para caber (mantém estética)
         scale = max_width / max(1, surf2.get_width())
         new_w = max(1, int(surf2.get_width() * scale))
         new_h = max(1, int(surf2.get_height() * scale))
@@ -289,7 +296,7 @@ class Game:
             sfx_on = self.settings.get("sfx_enabled", True)
             mus_on = self.settings.get("music_enabled", True)
             sfxv = int(round(self.settings.get("sfx_volume", 0.8) * 10))
-            musv = int(round(self.settings.get("music_volume", 0.6) * 10))
+            musv = int(round(self.settings.get("music_volume", 0.8) * 10))
             return [
                 f"Efeitos sonoros: {'ON' if sfx_on else 'OFF'}",
                 f"Música: {'ON' if mus_on else 'OFF'}",
@@ -353,6 +360,15 @@ class Game:
                 self.settings["music_enabled"] = not self.settings.get("music_enabled", True)
                 self._save_settings()
                 self._apply_audio_settings()
+                # aplica imediatamente (menu/game)
+                if self.state == STATE_MENU:
+                    self._music_menu()
+                elif self.state == STATE_PLAYING:
+                    self._music_game()
+                else:
+                    # overlays: só para
+                    if not self.settings.get("music_enabled", True):
+                        self._music_stop()
                 return
             if label.startswith("Voltar"):
                 self.menu_page = "settings"
@@ -375,7 +391,6 @@ class Game:
         self.menu_index = 0
 
     def _audio_adjust(self, direction):
-        # direction = -1 ou +1
         if self.menu_index == 2:  # Volume SFX
             v = float(self.settings.get("sfx_volume", 0.8))
             v = max(0.0, min(1.0, v + direction * 0.1))
@@ -386,14 +401,16 @@ class Game:
                 except Exception:
                     pass
             self._save_settings()
+
         elif self.menu_index == 3:  # Volume Música
-            v = float(self.settings.get("music_volume", 0.6))
+            v = float(self.settings.get("music_volume", 0.8))
             v = max(0.0, min(1.0, v + direction * 0.1))
             self.settings["music_volume"] = v
-            try:
-                pygame.mixer.music.set_volume(v)
-            except Exception:
-                pass
+            if hasattr(self.sounds, "set_music_volume"):
+                try:
+                    self.sounds.set_music_volume(v)
+                except Exception:
+                    pass
             self._save_settings()
 
     # ======================================================
@@ -407,6 +424,7 @@ class Game:
         self.menu_enter_t = 0.0
         self.menu_type_t = 0.0
         self.ui_pixels.clear()
+        self._music_menu()
 
     def start_game(self):
         self.snake.reset()
@@ -417,17 +435,24 @@ class Game:
         self.special_timer = 0
         self.state = STATE_PLAYING
         self._spawn_fruit(FruitType.NORMAL)
-        if self.settings.get("music_enabled", True):
-            self._ensure_music_playing()
+        self._music_game()
 
     def game_over(self):
         self.state = STATE_GAME_OVER
         if self.score > self.high_score:
             self.high_score = self.score
+
         self.go_enter_t = 0.0
         self.go_score_display = 0
         self.go_burst_done = False
-        self.sounds.play_gameover()
+
+        # som do seu amigo
+        self._music_stop()
+        if self.settings.get("sfx_enabled", True):
+            try:
+                self.sounds.play_gameover()
+            except Exception:
+                pass
 
     # ======================================================
     # FRUTAS / VELOCIDADE
@@ -586,14 +611,18 @@ class Game:
                 self.snake.grow(fruit.growth)
                 self.particles.emit(fruit.position[0], fruit.position[1], fruit.color)
 
+                # SFX respeitando config
                 if self.settings.get("sfx_enabled", True):
-                    if fruit.fruit_type == FruitType.SPEED:
-                        self.snake.activate_boost(SPEED_BOOST_DURATION)
-                        self.sounds.play_special()
-                    elif fruit.fruit_type == FruitType.GOLDEN:
-                        self.sounds.play_special()
-                    else:
-                        self.sounds.play_eat()
+                    try:
+                        if fruit.fruit_type == FruitType.SPEED:
+                            self.snake.activate_boost(SPEED_BOOST_DURATION)
+                            self.sounds.play_special()
+                        elif fruit.fruit_type == FruitType.GOLDEN:
+                            self.sounds.play_special()
+                        else:
+                            self.sounds.play_eat()
+                    except Exception:
+                        pass
                 else:
                     if fruit.fruit_type == FruitType.SPEED:
                         self.snake.activate_boost(SPEED_BOOST_DURATION)
@@ -722,18 +751,15 @@ class Game:
         )
 
     def _draw_menu(self):
-        # fundo jogo
         self.screen.fill(BORDER_COLOR)
         self.decorations.draw(self.screen)
         self._draw_grid()
 
-        # cobra + overlay escuro
         self.menu_snake.draw(self.screen, alpha=80)
         self._draw_overlay(110)
 
         cx, cy = WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2
 
-        # painel com bounce
         intro_t = self._clamp01(self.menu_enter_t / 0.70)
         intro = self._ease_out_back(intro_t)
         drop = int((1.0 - intro) * 72)
@@ -743,7 +769,6 @@ class Game:
         py = cy - panel_h // 2 + drop
         panel_rect = (px, py, panel_w, panel_h)
 
-        # poeira pixel sutil
         if random.random() < 0.08:
             self._spawn_ui_pixels(panel_rect, amount=2, burst=False)
 
@@ -753,12 +778,12 @@ class Game:
         self.screen.blit(panel, (px, py))
         self._blit_panel_scanlines(px, py, panel_w, panel_h, alpha=26)
 
-        # ===== LAYOUT INTERNO (sem sobreposição) =====
+        # layout interno
         pad_x = 28
         pad_top = 22
         pad_bottom = 18
-        footer_h = 44  # área reservada pro rodapé
-        title_h = 120  # área reservada pro título/subtítulo
+        footer_h = 44
+        title_h = 120
 
         inner_left = px + pad_x
         inner_right = px + panel_w - pad_x
@@ -767,7 +792,6 @@ class Game:
         title_y = py + pad_top + 22
         self._draw_menu_title(cx, title_y)
 
-        # nome da página (abaixo do título)
         page_name = {
             "main": "Menu",
             "settings": "Configurações",
@@ -777,7 +801,6 @@ class Game:
         subtitle = self.font_small.render(page_name, True, TEXT_SECONDARY)
         self.screen.blit(subtitle, subtitle.get_rect(center=(cx, py + pad_top + 104)))
 
-        # área de itens (entre título e rodapé)
         items_top = py + title_h
         items_bottom = py + panel_h - footer_h - pad_bottom
         items_h = max(10, items_bottom - items_top)
@@ -785,23 +808,18 @@ class Game:
         items = self._current_menu_items()
         n = len(items)
 
-        # espaçamento automático pra caber SEM invadir rodapé
-        # (min gap e centralização)
         line_h = 38 if self.menu_page in ("audio", "controls") else 42
-        needed = n * line_h
         gap = 10
-        total = needed + (n - 1) * gap
-        if total > items_h:
-            # aperta para caber
-            gap = max(4, gap - int((total - items_h) / max(1, n)))
-            total = needed + (n - 1) * gap
-            if total > items_h:
-                line_h = max(30, line_h - int((total - items_h) / max(1, n)))
-                total = n * line_h + (n - 1) * gap
+        needed = n * line_h + (n - 1) * gap
+        if needed > items_h:
+            gap = max(4, gap - int((needed - items_h) / max(1, n)))
+            needed = n * line_h + (n - 1) * gap
+            if needed > items_h:
+                line_h = max(30, line_h - int((needed - items_h) / max(1, n)))
+                needed = n * line_h + (n - 1) * gap
 
-        start_y = items_top + (items_h - total) // 2 + line_h // 2
+        start_y = items_top + (items_h - needed) // 2 + line_h // 2
 
-        # desenha itens + highlight (e FIT de largura)
         for i, label in enumerate(items):
             y = start_y + i * (line_h + gap)
             selected = (i == self.menu_index)
@@ -817,13 +835,10 @@ class Game:
                 self.screen.blit(hi, (hx, hy))
 
             color = TEXT_COLOR if selected else TEXT_SECONDARY
-
-            # no "audio" os textos são longos: usar fit (medium->small->scale)
             surf = self._render_fit(label, self.font_medium, self.font_small, color, max_width=int(inner_w * 0.92))
             rect = surf.get_rect(center=(cx, y))
             self.screen.blit(surf, rect)
 
-        # rodapé (DUAS LINHAS pra não invadir nada)
         footer_y1 = py + panel_h - footer_h + 8
         footer_y2 = footer_y1 + 18
         hint1 = "↑↓ navegar   ENTER selecionar"
@@ -832,30 +847,6 @@ class Game:
         h2 = self.font_small.render(hint2, True, TEXT_SECONDARY)
         self.screen.blit(h1, h1.get_rect(center=(cx, footer_y1)))
         self.screen.blit(h2, h2.get_rect(center=(cx, footer_y2)))
-
-        # legenda de frutas só no menu principal (e bem abaixo, sem encostar no rodapé)
-        if self.menu_page == "main":
-            fruit_sprites = _load_fruit_sprites()
-            fruits_info = [
-                (0, FRUIT_COLOR, f"+{POINTS_NORMAL} pts", TEXT_COLOR),
-                (1, FRUIT_GOLDEN_COLOR, "+50 pts (rara)", (255, 215, 0)),
-                (2, FRUIT_SPEED_COLOR, "+20 pts + speed", (180, 100, 210)),
-            ]
-            # coloca dentro da área de itens, mas depois dos itens (se sobrar espaço)
-            # se não sobrar, não desenha (evita bagunça)
-            after_items_y = start_y + (n - 1) * (line_h + gap) + (line_h // 2) + 18
-            if after_items_y + 70 < items_bottom:
-                legend_y = after_items_y + 10
-                for j, (spr_idx, fallback_color, txt, txt_color) in enumerate(fruits_info):
-                    yy = legend_y + j * 24
-                    icon_x = cx - 170
-                    if fruit_sprites and spr_idx < len(fruit_sprites):
-                        icon = pygame.transform.scale(fruit_sprites[spr_idx], (18, 18))
-                        self.screen.blit(icon, (icon_x - 9, yy - 9))
-                    else:
-                        pygame.draw.circle(self.screen, fallback_color, (icon_x, yy), 6)
-                    label_s = self.font_small.render(txt, True, txt_color)
-                    self.screen.blit(label_s, (icon_x + 14, yy - 10))
 
         self._draw_ui_pixels()
 
