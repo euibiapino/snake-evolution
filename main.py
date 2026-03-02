@@ -66,30 +66,24 @@ class Game:
         self.move_timer = 0
         self.special_timer = 0
 
-        # ===== TEMPO (para animações nos MENUS) =====
+        # Animações
         self.dt = 0.0
         self.dt_ms = 0
         self.t = 0.0
-
-        # ===== ESTADO: MENU START =====
         self.menu_enter_t = 0.0
         self.menu_type_t = 0.0
-
-        # ===== ESTADO: GAME OVER =====
         self.go_enter_t = 0.0
         self.go_score_display = 0
         self.go_burst_done = False
 
-        # ===== PARTICULAS PIXEL (só overlays/menu) =====
+        # UI
         self.ui_pixels = []
         self.panel_scan = self._build_panel_scanlines(560, 460)
-
-        # ====== MENU UI ======
         self.menu_page = "main"   # "main" | "settings" | "controls" | "audio"
         self.menu_index = 0
         self.paused_game = False
 
-        # ====== SETTINGS (carrega/salva) ======
+        # Settings
         self.settings_path = user_data_path("settings.json")
         self.settings = {
             "control_scheme": "both",  # "arrows" | "wasd" | "both"
@@ -101,12 +95,9 @@ class Game:
         self._load_settings()
         self._apply_audio_settings()
 
-        # >>> SOM DO SEU AMIGO (menu music) <<<
         self._music_menu()
 
-    # ======================================================
     # SETTINGS
-    # ======================================================
 
     def _load_settings(self):
         try:
@@ -133,9 +124,7 @@ class Game:
         self.sounds.set_sfx_enabled(self.settings.get("sfx_enabled", True))
         self.sounds.set_music_enabled(self.settings.get("music_enabled", True))
 
-    # ======================================================
-    # SOM (integração com o código do seu amigo)
-    # ======================================================
+    # Som
 
     def _music_menu(self):
         self.sounds.play_menu_music()
@@ -146,9 +135,7 @@ class Game:
     def _music_stop(self):
         self.sounds.stop_music()
 
-    # ======================================================
-    # HELPERS VISUAIS
-    # ======================================================
+    # Helpers visuais
 
     def _clamp01(self, x):
         return 0.0 if x < 0.0 else 1.0 if x > 1.0 else x
@@ -198,7 +185,6 @@ class Game:
         new_h = max(1, int(surf2.get_height() * scale))
         return pygame.transform.scale(surf2, (new_w, new_h))
 
-    # ===== partículas pixel (overlay/menu) =====
     def _spawn_ui_pixels(self, rect, amount=18, burst=False):
         x, y, w, h = rect
         for _ in range(amount):
@@ -255,9 +241,7 @@ class Game:
             surf.fill((p["c"][0], p["c"][1], p["c"][2], a))
             self.screen.blit(surf, (int(p["x"]), int(p["y"])))
 
-    # ======================================================
-    # MENU (itens/ações)
-    # ======================================================
+    # Menu
 
     def _current_menu_items(self):
         if self.menu_page == "main":
@@ -393,9 +377,7 @@ class Game:
             self.sounds.set_music_volume(v)
             self._save_settings()
 
-    # ======================================================
-    # CONTROLE DE ESTADO
-    # ======================================================
+    # Estado
 
     def _enter_menu(self, page="main"):
         self.state = STATE_MENU
@@ -442,9 +424,7 @@ class Game:
         self._music_stop()
         self.sounds.play_gameover()
 
-    # ======================================================
-    # FRUTAS / VELOCIDADE
-    # ======================================================
+    # Frutas
 
     def _get_occupied(self):
         occupied = set(self.snake.body)
@@ -469,9 +449,7 @@ class Game:
     def get_move_interval(self):
         return 1000 // self.get_speed()
 
-    # ======================================================
-    # EVENTOS
-    # ======================================================
+    # Eventos
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -553,9 +531,7 @@ class Game:
         elif key == pygame.K_ESCAPE:
             self._enter_menu("main")
 
-    # ======================================================
-    # UPDATE
-    # ======================================================
+    # Update
 
     def update(self):
         self.particles.update()
@@ -580,9 +556,10 @@ class Game:
             return
 
         self.move_timer += self.dt_ms
-        if self.move_timer < self.get_move_interval():
+        interval = self.get_move_interval()
+        if self.move_timer < interval:
             return
-        self.move_timer = 0
+        self.move_timer -= interval
 
         self.snake.move()
 
@@ -623,9 +600,7 @@ class Game:
                 special = random.choice([FruitType.GOLDEN, FruitType.SPEED])
                 self._spawn_fruit(special)
 
-    # ======================================================
-    # DRAW
-    # ======================================================
+    # Draw
 
     def draw(self):
         if self.state == STATE_MENU:
@@ -708,12 +683,11 @@ class Game:
         for fruit in self.fruits:
             fruit.draw(self.screen)
 
-        self.snake.draw(self.screen)
+        lerp_t = min(1.0, self.move_timer / max(1, self.get_move_interval()))
+        self.snake.draw(self.screen, lerp_t)
         self.particles.draw(self.screen)
 
-    # ======================================================
-    # MENU DRAW (layout corrigido)
-    # ======================================================
+    # Draw menu
 
     def _draw_menu_title(self, cx, title_y):
         full_title = "SNAKE"
@@ -865,9 +839,7 @@ class Game:
 
         self._draw_ui_pixels()
 
-    # ======================================================
-    # GAME OVER
-    # ======================================================
+    # Game over
 
     def _draw_gameover_overlay(self):
         self._draw_overlay(200)
@@ -928,9 +900,7 @@ class Game:
         resume = self.font_small.render("P ou ENTER para continuar", True, TEXT_SECONDARY)
         self.screen.blit(resume, resume.get_rect(center=(cx, cy + 30)))
 
-    # ======================================================
-    # LOOP PRINCIPAL
-    # ======================================================
+    # Loop principal
 
     def run(self):
         running = True

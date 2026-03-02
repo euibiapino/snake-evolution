@@ -20,9 +20,7 @@ def surf(size=CELL):
     return s
 
 
-# =========================================================================
-# COBRA
-# =========================================================================
+# Cobra
 
 def draw_head_right():
     s = surf()
@@ -110,9 +108,7 @@ def generate_snake():
     return save_sheet(sprites, 4, "assets/sprites/snake.png", "cobra")
 
 
-# =========================================================================
-# FRUTAS
-# =========================================================================
+# Frutas
 
 def draw_apple():
     """Maçã vermelha cartoon (fruta normal)."""
@@ -190,14 +186,44 @@ def draw_grapes():
     return s
 
 
+def draw_poison():
+    """Maçã venenosa verde com marcas de perigo."""
+    s = surf()
+    cx = H
+
+    # Corpo da maçã (verde tóxico)
+    pygame.draw.ellipse(s, (20, 130, 20), (3, 8, 26, 22))        # Sombra
+    pygame.draw.ellipse(s, (30, 180, 30), (4, 6, 24, 22))        # Corpo escuro
+    pygame.draw.ellipse(s, (50, 220, 50), (5, 7, 22, 20))        # Corpo principal
+    pygame.draw.ellipse(s, (120, 255, 120), (8, 9, 10, 8))       # Brilho
+
+    # Talo
+    pygame.draw.line(s, (60, 50, 20), (cx, 7), (cx + 1, 2), 2)
+    # Folha (mais escura, murcha)
+    pygame.draw.ellipse(s, (50, 100, 30), (cx + 1, 1, 8, 5))
+    pygame.draw.ellipse(s, (60, 120, 40), (cx + 2, 2, 6, 3))
+
+    # Caveira simplificada (símbolo de veneno)
+    # Crânio
+    pygame.draw.circle(s, (240, 240, 220), (cx, 16), 5)
+    pygame.draw.rect(s, (240, 240, 220), (cx - 3, 19, 6, 3))
+    # Olhos
+    pygame.draw.circle(s, (30, 30, 30), (cx - 2, 15), 2)
+    pygame.draw.circle(s, (30, 30, 30), (cx + 2, 15), 2)
+    # Boca
+    pygame.draw.line(s, (30, 30, 30), (cx - 2, 20), (cx + 2, 20), 1)
+    pygame.draw.line(s, (30, 30, 30), (cx - 1, 20), (cx - 1, 21), 1)
+    pygame.draw.line(s, (30, 30, 30), (cx + 1, 20), (cx + 1, 21), 1)
+
+    return s
+
+
 def generate_fruits():
-    sprites = [draw_apple(), draw_pineapple(), draw_grapes()]
-    return save_sheet(sprites, 3, "assets/sprites/fruits.png", "frutas")
+    sprites = [draw_apple(), draw_pineapple(), draw_grapes(), draw_poison()]
+    return save_sheet(sprites, 4, "assets/sprites/fruits.png", "frutas")
 
 
-# =========================================================================
-# DECORAÇÕES
-# =========================================================================
+# Decorações
 
 def draw_rock_1():
     """Pedra grande"""
@@ -302,9 +328,7 @@ def generate_decorations():
     return save_sheet(sprites, 6, "assets/sprites/decorations.png", "decorações")
 
 
-# =========================================================================
-# UTILITÁRIO
-# =========================================================================
+# Utilitário
 
 def save_sheet(sprites, cols, path, name):
     rows = (len(sprites) + cols - 1) // cols
@@ -325,7 +349,7 @@ def main():
     generate_snake()
     generate_fruits()
     generate_decorations()
-    print("Pronto!")
+    print("Pronto.")
 
     pygame.quit()
 

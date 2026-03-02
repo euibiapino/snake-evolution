@@ -22,6 +22,7 @@ class Snake:
         self.growing = 0
         self.speed_boost = False
         self.boost_timer = 0
+        self.prev_body = list(self.body)
 
     @property
     def head(self):
@@ -33,6 +34,7 @@ class Snake:
             self.direction = new_direction
 
     def move(self):
+        self.prev_body = list(self.body)
         head_x, head_y = self.head
         new_head = (head_x + self.direction[0], head_y + self.direction[1])
         self.body.insert(0, new_head)
@@ -61,8 +63,8 @@ class Snake:
     def hit_self(self):
         return self.head in self.body[1:]
 
-    def draw(self, screen):
-        self._renderer.draw(screen, self.body, self.direction, self.speed_boost)
+    def draw(self, screen, lerp_t=1.0):
+        self._renderer.draw(screen, self.body, self.direction, self.speed_boost, lerp_t)
 
     def __len__(self):
         return len(self.body)
