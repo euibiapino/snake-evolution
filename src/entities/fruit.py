@@ -51,9 +51,9 @@ FRUIT_CONFIG = {
         "color": FRUIT_POISON_COLOR,
         "glow": FRUIT_POISON_GLOW,
         "points": POINTS_POISON,
-        "growth": 0,  # A gente vai tirar tamanho na cobra, não na fruta!
+        "growth": 0,
         "lifetime": SPECIAL_FRUIT_LIFETIME,
-        "sprite_index": 3, # Se não tiver um 4º sprite, ele usa a cor verde
+        "sprite_index": 3,
     },
 }
 

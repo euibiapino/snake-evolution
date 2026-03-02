@@ -53,9 +53,9 @@ class Snake:
         self.growing += amount
 
     def shrink(self, amount=1):
-        # Regra fatal: Se tiver só 1 segmento (a cabeça), o veneno mata!
-        if len(self.body) <= 1:
-            return False 
+        # Regra fatal: se tiver só cabeça + cauda, o veneno mata
+        if len(self.body) <= 3:
+            return False
 
         # Arranca 'amount' pedaços do final da lista (o rabo)
         for _ in range(amount):
@@ -65,7 +65,7 @@ class Snake:
         # Zera qualquer crescimento que estava pendente para evitar bugs
         self.growing = 0
 
-        return True  # Retorna True para avisar que ela sobreviveu
+        return True 
 
     def activate_boost(self, duration):
         self.speed_boost = True

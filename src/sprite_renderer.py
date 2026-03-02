@@ -128,10 +128,10 @@ class SnakeSpriteRenderer:
             py = pos[1] * cs + GRID_OFFSET_Y
 
             if i == 0:
-                if 1 not in corners:
+                if last >= 1 and 1 not in corners:
                     px += (body[1][0] - pos[0]) * back * cs
                     py += (body[1][1] - pos[1]) * back * cs
-                else:
+                elif last >= 1:
                     px -= direction[0] * back * cs * 0.5
                     py -= direction[1] * back * cs * 0.5
                 idx = HEAD_MAP[direction]
